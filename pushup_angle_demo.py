@@ -21,6 +21,9 @@ Run with:
 (angle_calculator.py must be in the same folder.)
 """
 
+import math
+import numbers
+
 from angle_calculator import calculate_angle
 from form_analyzer import analyze_push_up_form
 
@@ -164,19 +167,141 @@ def landmark_to_point(landmark):
     return (landmark["x"], landmark["y"])
 
 
+# ---------------------------------------------------------------------------
+# VISIBILITY CHECK
+# ---------------------------------------------------------------------------
+# MediaPipe gives every landmark a visibility between 0 and 1. A low value
+# means MediaPipe is not sure the body part is really visible, so any angle
+# that uses it could be wrong. We only trust an angle if ALL landmarks it
+# needs are visible enough.
+#
+# 0.5 is a provisional engineering value for testing. Tune it with real videos.
+VISIBILITY_THRESHOLD = 0.5
+
+# The landmarks each angle needs (the same ones get_*_angle() uses above).
+ELBOW_LANDMARKS = ["left_shoulder", "left_elbow", "left_wrist"]
+HIP_LANDMARKS = ["left_shoulder", "left_hip", "left_ankle"]
+SHOULDER_LANDMARKS = ["left_elbow", "left_shoulder", "left_hip"]
+
+
+def is_valid_number(value):
+    """
+    True only for a real, finite number (int or float).
+
+    Text like "high", None, True/False, NaN and infinity all return False.
+    We check the TYPE first because math.isfinite("high") would crash.
+    """
+    if not isinstance(value, numbers.Real) or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:   # an integer too big to turn into a float
+        return False
+
+
+def has_valid_coordinates(landmark):
+    """True if the landmark is a dictionary with a usable x and y."""
+    return (isinstance(landmark, dict)
+            and is_valid_number(landmark.get("x"))
+            and is_valid_number(landmark.get("y")))
+
+
+def find_visibility_problems(landmark_dict, required_names,
+                             threshold=VISIBILITY_THRESHOLD):
+    """
+    Check the required landmarks and return a list of problems (text).
+
+    An empty list means every required landmark is present, has usable x and
+    y coordinates, and is visible enough. This function never crashes on bad
+    data: anything unusable is reported as a problem instead.
+    """
+    problems = []
+    for name in required_names:
+        landmark = landmark_dict.get(name)
+
+        # The landmark itself must exist and be a dictionary.
+        if landmark is None:
+            problems.append(f"{name} is missing")
+            continue
+        if not isinstance(landmark, dict):
+            problems.append(f"{name} is not a valid landmark dictionary")
+            continue
+
+        # The coordinates must be real numbers.
+        for key in ("x", "y"):
+            if key not in landmark:
+                problems.append(f"{name} has no '{key}' coordinate")
+            elif not is_valid_number(landmark[key]):
+                problems.append(
+                    f"{name} has an invalid '{key}' coordinate "
+                    f"({landmark[key]!r})")
+
+        # The visibility must be a real number that reaches the threshold.
+        if "visibility" not in landmark:
+            problems.append(f"{name} has no visibility value")
+        elif not is_valid_number(landmark["visibility"]):
+            problems.append(
+                f"{name} has an invalid visibility value "
+                f"({landmark['visibility']!r})")
+        elif landmark["visibility"] < threshold:
+            problems.append(
+                f"{name} visibility {landmark['visibility']:.3f} "
+                f"is below {threshold}")
+    return problems
+
+
+def measure_angle_if_reliable(angle_name, measure_function, required_names,
+                              landmark_dict, points):
+    """
+    Measure one angle only if its required landmarks are reliable.
+
+    Returns (angle, note):
+        reliable   -> (the angle, None)
+        unreliable -> (None, a message explaining why it was not assessed)
+    Passing None on is safe: analyze_push_up_form() treats None as "missing".
+    """
+    problems = find_visibility_problems(landmark_dict, required_names)
+    if problems:
+        return None, f"{angle_name} angle not assessed: " + "; ".join(problems)
+    return measure_function(points), None
+
+
+def angle_text(angle, note):
+    """Text for printing: 'not assessed' if the angle was rejected."""
+    if note is not None:
+        return "not assessed"
+    return format_angle(angle)
+
+
 def print_landmark_report(title, landmark_dict):
     """Convert Person 1's landmarks, measure the angles, analyze the form, print."""
-    # Step 1: convert every landmark from {"x","y","visibility"} to (x, y).
-    # After this, the dictionary looks like the ones in POSES, so the
-    # existing get_elbow_angle() and get_hip_angle() work unchanged.
-    points = {name: landmark_to_point(lm) for name, lm in landmark_dict.items()}
+    # If we did not receive a dictionary at all, treat it as "no landmarks".
+    if not isinstance(landmark_dict, dict):
+        landmark_dict = {}
 
-    # Step 2: calculate the joint angles (uses calculate_angle()).
-    elbow_angle = get_elbow_angle(points)
-    hip_angle = get_hip_angle(points)
-    shoulder_angle = get_shoulder_angle(points)
+    # Step 1: convert landmarks from {"x","y","visibility"} to (x, y).
+    # Only landmarks with usable x and y are converted, so one broken landmark
+    # cannot crash the report. After this, the dictionary looks like the ones
+    # in POSES, so the existing get_elbow_angle() and get_hip_angle() work
+    # unchanged.
+    points = {name: landmark_to_point(lm)
+              for name, lm in landmark_dict.items()
+              if has_valid_coordinates(lm)}
 
-    # Step 3: send all three angles to the form analyzer.
+    # Step 2: calculate each joint angle (uses calculate_angle()), but only
+    # if the landmarks it needs are usable and visible enough. Each angle is
+    # checked on its own, so one unreliable angle does not stop the others.
+    elbow_angle, elbow_note = measure_angle_if_reliable(
+        "Elbow", get_elbow_angle, ELBOW_LANDMARKS, landmark_dict, points)
+    hip_angle, hip_note = measure_angle_if_reliable(
+        "Hip", get_hip_angle, HIP_LANDMARKS, landmark_dict, points)
+    shoulder_angle, shoulder_note = measure_angle_if_reliable(
+        "Shoulder", get_shoulder_angle, SHOULDER_LANDMARKS,
+        landmark_dict, points)
+    notes = [n for n in (elbow_note, hip_note, shoulder_note) if n]
+
+    # Step 3: send the angles to the form analyzer. A rejected angle is None,
+    # which form_analyzer already treats as "missing".
     result = analyze_push_up_form(
         elbow_angle=elbow_angle,
         hip_angle=hip_angle,
@@ -184,9 +309,15 @@ def print_landmark_report(title, landmark_dict):
     )
 
     print(title)
-    print(f"Elbow Angle: {format_angle(elbow_angle)}")
-    print(f"Hip Angle: {format_angle(hip_angle)}")
-    print(f"Shoulder Angle: {format_angle(shoulder_angle)}")
+    print(f"Elbow Angle: {angle_text(elbow_angle, elbow_note)}")
+    print(f"Hip Angle: {angle_text(hip_angle, hip_note)}")
+    print(f"Shoulder Angle: {angle_text(shoulder_angle, shoulder_note)}")
+    print(f"Visibility Check (threshold {VISIBILITY_THRESHOLD}):")
+    if notes:
+        for note in notes:
+            print(f"  - {note}")
+    else:
+        print("  All required landmarks are reliable.")
     print("Form Analysis:")
     print(f"  Status: {result['form_status']}")
     print(f"  Movement Phase: {result['movement_phase']}")
