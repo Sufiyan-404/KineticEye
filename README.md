@@ -42,6 +42,8 @@ The KineticEye web interface is designed to present exercise insights through an
 
 - **Feature 10: Machine Learning Integration** — Plans to use extracted pose and movement features to train and evaluate models for exercise or form classification.
 
+- **Feature 11: Face Authentication System** — Designed to put a verification system in place to check if the person who's registered is the one who's doing the exercise.
+
 
 ## 💻 How to Use
 
