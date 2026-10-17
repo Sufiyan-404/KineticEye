@@ -1,6 +1,6 @@
 # 🚀 KineticEye
 
-> This app can help you in becoming a fitter you !!!
+> Stop dreaming and starting being Kinetic in becoming a fitter you !!!
 
 ---
 
@@ -45,9 +45,25 @@ Tell your co-workers how to set up the project on their local computer.
 
 
 ## 💻 How to Use
-Type instructions or examples on how to actually use your project after it is installed. You can add a screenshot or a GIF right below this if you want.
 
-## 🤝 Collaborators
-Give credit to the people you are working with:
-- [Your Name](https://github.com) - Role/Contribution
-- [Teammate Name](https://github.com) - Role/Contribution
+The **Sports Video Analytics & Action Counter** prototype demonstrates how computer vision and geometric analysis can be used to evaluate exercise movements, count repetitions, and provide posture-related feedback.
+
+### 🏋️ Using the Application
+
+1. **Select an Exercise:** Choose a supported exercise, such as push-ups.
+2. **Provide Video Input:** Use the webcam or upload a recorded exercise video, depending on the available prototype functionality.
+3. **Start Analysis:** Initiate the exercise-analysis process to examine body landmarks and movement patterns.
+4. **Monitor Joint Angles:** View calculated joint angles, such as the elbow and hip angles, to understand body positioning.
+5. **Track Repetitions:** Observe the repetition counter as the system identifies completed movement cycles.
+6. **Review Form Feedback:** Check the displayed form status and feedback messages for potential posture improvements.
+7. **Evaluate Results:** Review the repetition count, movement analysis, and available workout statistics.
+
+### 🧪 Prototype Testing
+
+- Test the application with different exercise videos and movement speeds.
+- Compare the calculated joint angles with expected values.
+- Verify that incomplete movements are not counted as full repetitions.
+- Observe how missing landmarks and incorrect posture affect the analysis.
+- Use the results to identify areas for improving accuracy and reliability.
+
+> **Note:** This is an evolving prototype. The availability and accuracy of individual features depend on the current level of implementation and integration. Additional exercises, machine-learning-based classification, personalized feedback, and advanced workout analytics are planned enhancements.
