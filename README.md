@@ -43,11 +43,6 @@ The KineticEye web interface is designed to present exercise insights through an
 - **Feature 10: Machine Learning Integration** — Plans to use extracted pose and movement features to train and evaluate models for exercise or form classification.
 
 
-
-## 🚀 Getting Started
-Tell your co-workers how to set up the project on their local computer.
-
-
 ## 💻 How to Use
 
 The **Sports Video Analytics & Action Counter** prototype demonstrates how computer vision and geometric analysis can be used to evaluate exercise movements, count repetitions, and provide posture-related feedback.
