@@ -4,7 +4,7 @@
 
 ---
 
-## 📌 Table of Contents
+##  Table of Contents
 - [About the Project](#-about-the-project)
 - [Features](#-features)
 - [Getting Started](#-getting-started)
@@ -13,14 +13,14 @@
 
 ---
 
-## 📋 About the Project
+##  About the Project
 
 KineticEye is an AI-powered sports video analytics and exercise-form analysis project developed as part of a first-year Artificial Intelligence and Machine Learning (AIML) mini project. The project focuses on analyzing push-up movements using computer vision to make exercise tracking more informative and measurable. It uses Python, OpenCV, MediaPipe and NumPy to detect body landmarks, calculate elbow, shoulder and hip angles, validate landmark visibility, and evaluate exercise form using rule-based analysis. A repetition-counting algorithm tracks movement phases and counts a repetition only after a complete TOP → BOTTOM → TOP cycle, helping reduce incorrect counts caused by incomplete movements. The system also extracts structured, frame-by-frame features and exports them to CSV files for further inspection and data analysis.
 
 The KineticEye web interface is designed to present exercise insights through an intuitive dashboard, interactive visualizations and analysis reports, making technical results easier to understand. Unlike conventional fitness websites that primarily offer workout routines, exercise demonstrations or manually maintained progress trackers, KineticEye aims to connect movement analysis with measurable data. It considers individual joint angles, landmark reliability, movement phases and form feedback rather than relying solely on repetition totals. Its modular architecture also makes the analysis process easier to test, maintain and extend. The project is being developed with future integration, dataset analysis and machine-learning capabilities in mind. By combining computer vision, mathematical analysis and an accessible user interface, KineticEye aims to bridge the gap between exercise tracking and data-driven fitness insights while providing a practical foundation for further development in intelligent sports analytics.
 
 
-## ✨ Features
+## Features
 
 - **Feature 1: AI-Powered Pose Estimation** — Uses MediaPipe to detect and track important body landmarks, including shoulders, elbows, hips, knees, and ankles.
 
@@ -45,11 +45,11 @@ The KineticEye web interface is designed to present exercise insights through an
 - **Feature 11: Face Authentication System** — Designed to put a verification system in place to check if the person who's registered is the one who's doing the exercise.
 
 
-## 💻 How to Use
+## How to Use
 
 The **Sports Video Analytics & Action Counter** prototype demonstrates how computer vision and geometric analysis can be used to evaluate exercise movements, count repetitions, and provide posture-related feedback.
 
-### 🏋️ Using the Application
+### Using the Application
 
 1. **Select an Exercise:** Choose a supported exercise, such as push-ups.
 2. **Provide Video Input:** Use the webcam or upload a recorded exercise video, depending on the available prototype functionality.
@@ -59,7 +59,7 @@ The **Sports Video Analytics & Action Counter** prototype demonstrates how compu
 6. **Review Form Feedback:** Check the displayed form status and feedback messages for potential posture improvements.
 7. **Evaluate Results:** Review the repetition count, movement analysis, and available workout statistics.
 
-### 🧪 Prototype Testing
+### Prototype Testing
 
 - Test the application with different exercise videos and movement speeds.
 - Compare the calculated joint angles with expected values.
@@ -72,7 +72,7 @@ The **Sports Video Analytics & Action Counter** prototype demonstrates how compu
 
 ---
 
-## 🤝 Acknowledgements & AI-Assisted Development
+## Acknowledgements & AI-Assisted Development
 
 This project was developed with the assistance of **Claude (Anthropic)**, which was used as a coding assistant to help draft and refine implementations, troubleshoot errors, improve test coverage, and explain technical concepts throughout development.
 
