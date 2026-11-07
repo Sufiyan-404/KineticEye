@@ -10,7 +10,7 @@ The project currently focuses on **push-up analysis**, using Python, OpenCV, Med
 
 A repetition counter recognizes complete **TOP → BOTTOM → TOP** movement cycles, reducing incorrect counts from incomplete repetitions. The system also extracts frame-by-frame movement features into CSV files for further inspection and analysis.
 
-KineticEye aims to go beyond traditional fitness trackers by combining repetition counting with measurable joint angles, movement phases, landmark reliability and form feedback. Its developing web interface aims to make these insights accessible through interactive visualizations and workout reports.
+KineticEye aims to go beyond traditional fitness trackers by combining repetition counting with measurable joint angles, movement phases, landmark reliability and form feedback. Its developing web & app interface aims to make these insights accessible through interactive visualizations and workout reports.
 
 ## Features
 
