@@ -1,83 +1,122 @@
-# KineticEye
+# KineticEye 
 
-> Stop dreaming and starting being Kinetic in becoming a fitter you !!!
+link to the prototype website : https://sable-modal-29074405.figma.site/
 
----
+## About the Project
 
-##  Table of Contents
-- [About the Project](#-about-the-project)
-- [Features](#-features)
-- [Getting Started](#-getting-started)
-- [Using the Application](#-using-the-application)
-- [Prototype Testing](#-prototype-testing)
+KineticEye is an AI-powered sports video analytics and exercise-form analysis project developed as a first-year Artificial Intelligence and Machine Learning (AIML) mini project.
 
----
+The project currently focuses on **push-up analysis**, using Python, OpenCV, MediaPipe and NumPy to detect body landmarks, calculate elbow, shoulder and hip angles, validate landmark visibility, and evaluate exercise form through rule-based analysis.
 
-##  About the Project
+A repetition counter recognizes complete **TOP → BOTTOM → TOP** movement cycles, reducing incorrect counts from incomplete repetitions. The system also extracts frame-by-frame movement features into CSV files for further inspection and analysis.
 
-KineticEye is an AI-powered sports video analytics and exercise-form analysis project developed as part of a first-year Artificial Intelligence and Machine Learning (AIML) mini project. The project focuses on analyzing push-up (and many other exercises) movements using computer vision to make exercise tracking more informative and measurable. It uses Python, OpenCV, MediaPipe and NumPy to detect body landmarks, calculate elbow, shoulder and hip angles, validate landmark visibility, and evaluate exercise form using rule-based analysis. A repetition-counting algorithm tracks movement phases and counts a repetition only after a complete TOP → BOTTOM → TOP cycle, helping reduce incorrect counts caused by incomplete movements. The system also extracts structured, frame-by-frame features and exports them to CSV files for further inspection and data analysis.
-
-The KineticEye web interface is designed to present exercise insights through an intuitive dashboard, interactive visualizations and analysis reports, making technical results easier to understand. Unlike conventional fitness websites that primarily offer workout routines, exercise demonstrations or manually maintained progress trackers, KineticEye aims to connect movement analysis with measurable data. It considers individual joint angles, landmark reliability, movement phases and form feedback rather than relying solely on repetition totals. Its modular architecture also makes the analysis process easier to test, maintain and extend. The project is being developed with future integration, dataset analysis and machine-learning capabilities in mind. By combining computer vision, mathematical analysis and an accessible user interface, KineticEye aims to bridge the gap between exercise tracking and data-driven fitness insights while providing a practical foundation for further development in intelligent sports analytics.
-
+KineticEye aims to go beyond traditional fitness trackers by combining repetition counting with measurable joint angles, movement phases, landmark reliability and form feedback. Its developing web interface aims to make these insights accessible through interactive visualizations and workout reports.
 
 ## Features
 
-- **Feature 1: AI-Powered Pose Estimation** — Uses MediaPipe to detect and track important body landmarks, including shoulders, elbows, hips, knees, and ankles.
+1. **AI-Powered Pose Estimation:** Uses MediaPipe to identify body landmarks, including shoulders, elbows, hips, knees and ankles.
+2. **Real-Time Skeleton Overlay:** Visualizes detected body joints and connections in supported camera demonstrations.
+3. **Joint-Angle Calculation:** Uses geometric mathematics and NumPy to calculate elbow, hip and shoulder angles.
+4. **Automatic Rep Counting:** Counts completed push-ups using a state-based TOP → BOTTOM → TOP sequence.
+5. **Intelligent Form Analysis:** Evaluates selected posture indicators using angle thresholds and movement rules.
+6. **Real-Time Feedback:** Rule-based posture guidance, such as maintaining a straighter back or improving movement depth, with live presentation planned.
+7. **Exercise Support:** Currently focused on push-ups; squats, bicep curls and other exercises are planned.
+8. **Interactive Fitness Dashboard:** A developing interface for exercise videos, repetition counts, joint angles, form status and progress.
+9. **Workout Analytics:** Frame-level CSV analysis is implemented; long-term workout progress and repetition-quality analytics are planned.
+10. **Machine Learning Integration:** Future classification of exercises and form quality using extracted movement features.
+11. **Face Authentication System:** Planned identity verification to check whether the registered user is performing the exercise.
 
-- **Feature 2: Real-Time Skeleton Overlay** — Displays a digital skeleton over the user's body to visualize movement and joint positions.
+## Technology Stack
 
-- **Feature 3: Joint-Angle Calculation** — Uses Python, NumPy, and geometric mathematics to calculate joint angles and analyze exercise movements.
+**Python, OpenCV, MediaPipe, NumPy, Pandas, Matplotlib, Scikit-learn and Streamlit** are part of the project's development stack or planned extensions. The current core video-analysis pipeline primarily uses Python, OpenCV, MediaPipe and NumPy.
 
-- **Feature 4: Automatic Rep Counting** — Uses a state machine to count completed repetitions while reducing half-rep errors and double counting.
+## Installation & Setup
 
-- **Feature 5: Intelligent Form Analysis** — Evaluates selected posture indicators and identifies potential issues using configurable angle thresholds and movement rules.
+The following instructions are intended for Windows laptops.
 
-- **Feature 6: Real-Time Feedback** — Provides guidance such as "Keep your back straighter" or "Complete the full range of motion."
+### Step 1: Prerequisites
 
-- **Feature 7: Exercise Support** — Initially focuses on push-ups, with plans to extend the system to squats, bicep curls, and other exercises.
+Install **Python 3.12** and Git. A recorded push-up video is required for the video-analysis demonstration; a webcam is useful for camera testing.
 
-- **Feature 8: Interactive Fitness Dashboard** — Displays the exercise video, repetition count, joint angles, form status, and workout progress in a modern interface.
+### Step 2: Download the Project
 
-- **Feature 9: Workout Analytics** — Aims to track repetition quality, movement consistency, and workout progress over time.
+Open PowerShell or the VS Code terminal:
 
-- **Feature 10: Machine Learning Integration** — Plans to use extracted pose and movement features to train and evaluate models for exercise or form classification.
+```powershell
+git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+cd YOUR-REPOSITORY
+```
 
-- **Feature 11: Face Authentication System** — Designed to put a verification system in place to check if the person who's registered is the one who's doing the exercise.
+Replace the example URL with the actual KineticEye GitHub repository address.
 
+### Step 3: Create a Virtual Environment
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+### Step 4: Install Dependencies
+
+If the repository includes `requirements.txt`:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Otherwise, install the core video-analysis dependencies:
+
+```powershell
+python -m pip install opencv-python mediapipe numpy pytest
+```
+
+### Step 5: Run Video Analysis
+
+Keep the original `person1/src` and `person2/src` folder structure intact.
+
+From the project root:
+
+```powershell
+cd person2\src
+python video_analysis_demo.py "C:\Videos\pushups.mp4"
+```
+
+Replace the example path with your own video. For best results, record from the side with the left shoulder, elbow, wrist, hip and ankle visible.
+
+The program processes the frames, calculates angles, assesses form, counts repetitions and generates a CSV file named `pushups_features.csv` in the current working directory.
+
+### Step 6: Run Tests
+
+From `person2/src`:
+
+```powershell
+python -m pytest -v
+```
+
+This runs the available automated tests. Real-video validation is still recommended.
 
 ## How to Use
 
-The **Sports Video Analytics & Action Counter** prototype demonstrates how computer vision and geometric analysis can be used to evaluate exercise movements, count repetitions, and provide posture-related feedback.
-
-### Using the Application
-
-1. **Select an Exercise:** Choose a supported exercise, such as push-ups.
-2. **Provide Video Input:** Use the webcam or upload a recorded exercise video, depending on the available prototype functionality.
-3. **Start Analysis:** Initiate the exercise-analysis process to examine body landmarks and movement patterns.
-4. **Monitor Joint Angles:** View calculated joint angles, such as the elbow and hip angles, to understand body positioning.
-5. **Track Repetitions:** Observe the repetition counter as the system identifies completed movement cycles.
-6. **Review Form Feedback:** Check the displayed form status and feedback messages for potential posture improvements.
-7. **Evaluate Results:** Review the repetition count, movement analysis, and available workout statistics.
+1. **Select an Exercise:** Push-ups are the current exercise focus.
+2. **Provide Video Input:** Use a recorded video for the Python pipeline; webcam demonstrations depend on the available implementation.
+3. **Start Analysis:** Run the video-analysis command.
+4. **Monitor Joint Angles:** Review calculated elbow, shoulder and hip angles in the generated results.
+5. **Track Repetitions:** Check the completed repetition count displayed in the terminal.
+6. **Review Form Feedback:** Inspect the form-status and feedback fields in the CSV.
+7. **Evaluate Results:** Use the extracted features to study movement consistency and identify potential improvements.
 
 ### Prototype Testing
 
-- Test the application with different exercise videos and movement speeds.
-- Compare the calculated joint angles with expected values.
-- Verify that incomplete movements are not counted as full repetitions.
-- Observe how missing landmarks and incorrect posture affect the analysis.
-- Use the results to identify areas for improving accuracy and reliability.
+Test different push-up videos and movement speeds, compare calculated angles with expected values, verify that incomplete repetitions are not counted, and observe how missing landmarks or incorrect posture affect results.
 
-> **Note:** This is an evolving prototype. The availability and accuracy of individual features depend on the current level of implementation and integration. Additional exercises, machine-learning-based classification, personalized feedback, and advanced workout analytics are planned enhancements.
+> **Note:** KineticEye is an evolving prototype. The Python pipeline and web dashboard are still being integrated, and some features remain planned.
 
+## Future Improvements
 
----
+Expand to squats, bicep curls and other exercises; implement machine-learning classification, personalized feedback, advanced workout analytics, improved dashboard integration and face-based user authentication.
 
 ## Acknowledgements & AI-Assisted Development
 
-This project was developed with the assistance of **Claude (Anthropic)**, which was used as a coding assistant to help draft and refine implementations, troubleshoot errors, improve test coverage, and explain technical concepts throughout development.
+KineticEye was developed with assistance from **Claude (Anthropic)** for drafting and refining code, debugging, improving test coverage and understanding technical concepts.
 
-The development process involved defining project requirements, integrating different modules, testing functionality, resolving compatibility issues, and iteratively improving the overall system. AI assistance was used as a tool to support development and learning, while project-specific decisions and implementation requirements were guided by the project team.
-
-This project represents an ongoing learning experience in computer vision, software development, and artificial intelligence. We aim to continue improving our understanding of the underlying algorithms, validating the system through practical testing, and extending its capabilities in future iterations.
-
----
+The project team guided requirements, integration, implementation decisions and validation. AI-assisted development has supported the team's learning in computer vision, software engineering and artificial intelligence.
