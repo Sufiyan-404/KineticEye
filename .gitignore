@@ -1,0 +1,23 @@
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# VS Code settings
+.vscode/
+
+# Generated analysis outputs
+*_features.csv
+
+# Exercise videos
+*.mp4
+*.avi
+*.mov
+
+# Local backups and review packages
+src_backup_before_integration/
+integration_review/

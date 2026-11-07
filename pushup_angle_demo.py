@@ -16,6 +16,14 @@ Section 4 at the bottom shows how landmarks in Person 1's format
 ({"x": ..., "y": ..., "visibility": ...}) are converted and sent through
 calculate_angle() and then analyze_push_up_form().
 
+analyze_landmarks() does the measuring and form analysis without printing
+(video_analysis_demo.py uses it); print_landmark_report() calls it and prints.
+
+Real camera frames are not square, so print_landmark_report() can also be given
+the image width and height. It then converts MediaPipe's 0-1 coordinates to
+pixels before measuring angles. Without the size, the 0-1 values are used as
+they are (the simulated demo does this).
+
 Run with:
     python pushup_angle_demo.py
 (angle_calculator.py must be in the same folder.)
@@ -156,15 +164,53 @@ LANDMARK_EXAMPLE = {
 }
 
 
-def landmark_to_point(landmark):
+def check_image_size(image_width, image_height):
+    """
+    Check the image size and return (width, height) in pixels.
+
+    Returns None if BOTH are None (no size given, so no scaling).
+    Raises ValueError if only one is given, or if either is not above 0.
+    Raises TypeError if either is not a whole number (text, decimals, True...).
+    """
+    if image_width is None and image_height is None:
+        return None
+    if image_width is None or image_height is None:
+        raise ValueError(
+            "image_width and image_height must be given together, "
+            "but only one of them was provided.")
+
+    for name, value in (("image_width", image_width),
+                        ("image_height", image_height)):
+        # bool is a kind of int in Python, so we reject True/False explicitly.
+        if isinstance(value, bool) or not isinstance(value, numbers.Integral):
+            raise TypeError(
+                f"{name} must be a whole number of pixels, "
+                f"but got {type(value).__name__}: {value!r}.")
+        if value <= 0:
+            raise ValueError(f"{name} must be greater than 0, but got {value}.")
+    return int(image_width), int(image_height)
+
+
+def landmark_to_point(landmark, image_width=None, image_height=None):
     """
     Convert one Person 1 landmark into the (x, y) point calculate_angle() needs.
 
         {"x": 0.70, "y": 0.45, "visibility": 0.98}  ->  (0.70, 0.45)
 
-    Only x and y are kept. visibility is ignored for now.
+    If the image size is given, x and y are first converted from MediaPipe's
+    0-1 values to pixels (x uses the width, y uses the height). For a
+    640 x 480 image:
+
+        {"x": 0.50, "y": 0.25, "visibility": 0.98}  ->  (320.0, 120.0)
+
+    Only x and y are used. visibility is never changed or scaled.
     """
-    return (landmark["x"], landmark["y"])
+    size = check_image_size(image_width, image_height)
+    x, y = landmark["x"], landmark["y"]
+    if size is None:
+        return (x, y)
+    width, height = size
+    return (x * width, y * height)
 
 
 # ---------------------------------------------------------------------------
@@ -273,18 +319,58 @@ def angle_text(angle, note):
     return format_angle(angle)
 
 
-def print_landmark_report(title, landmark_dict):
-    """Convert Person 1's landmarks, measure the angles, analyze the form, print."""
+def _note_for(notes, angle_name):
+    """
+    Pick the "not assessed" note for one angle ("Elbow", "Hip", "Shoulder")
+    out of the notes list, or None if that angle had no problem.
+    measure_angle_if_reliable() starts every note with "<Name> angle not
+    assessed", which is what we look for here.
+    """
+    prefix = f"{angle_name} angle not assessed"
+    for note in notes:
+        if note.startswith(prefix):
+            return note
+    return None
+
+
+def analyze_landmarks(landmark_dict, image_width=None, image_height=None):
+    """
+    Convert Person 1's landmarks, measure the angles and analyze the form.
+    This does exactly what print_landmark_report() does, but PRINTS NOTHING.
+
+    image_width and image_height (in pixels) are optional. Give BOTH to
+    convert the landmarks to pixel coordinates before measuring angles (use
+    this for real camera or video frames). Leave BOTH out to use the 0-1
+    values as they are, like the simulated demo does.
+
+    An empty dictionary (nobody detected) is fine: every angle is then None
+    and the analyzer reports INCOMPLETE_DATA.
+
+    Returns a tuple (angles, result, notes):
+        angles : dict with the keys "elbow_angle", "hip_angle" and
+                 "shoulder_angle". Each value is the angle in degrees that was
+                 sent to the form analyzer, or None if the visibility check
+                 rejected it.
+        result : the dictionary returned by analyze_push_up_form().
+        notes  : list of texts explaining why an angle was not assessed
+                 (empty when every angle was reliable).
+    """
+    # Check the image size first, so a wrong size stops everything before
+    # anything is calculated.
+    check_image_size(image_width, image_height)
+
     # If we did not receive a dictionary at all, treat it as "no landmarks".
     if not isinstance(landmark_dict, dict):
         landmark_dict = {}
 
-    # Step 1: convert landmarks from {"x","y","visibility"} to (x, y).
-    # Only landmarks with usable x and y are converted, so one broken landmark
-    # cannot crash the report. After this, the dictionary looks like the ones
-    # in POSES, so the existing get_elbow_angle() and get_hip_angle() work
-    # unchanged.
-    points = {name: landmark_to_point(lm)
+    # Step 1: convert landmarks from {"x","y","visibility"} to (x, y), in
+    # pixels if the image size was given. Only landmarks with usable x and y
+    # are converted, so one broken landmark cannot crash the report. After
+    # this, the dictionary looks like the ones in POSES, so the existing
+    # get_elbow_angle() and get_hip_angle() work unchanged.
+    # (Visibility is checked below on the ORIGINAL landmark_dict, so it is
+    # never scaled.)
+    points = {name: landmark_to_point(lm, image_width, image_height)
               for name, lm in landmark_dict.items()
               if has_valid_coordinates(lm)}
 
@@ -308,10 +394,49 @@ def print_landmark_report(title, landmark_dict):
         shoulder_angle=shoulder_angle,
     )
 
+    # The three angles exactly as they were just sent to the analyzer (None
+    # for any angle the visibility check rejected).
+    angles = {
+        "elbow_angle": elbow_angle,
+        "hip_angle": hip_angle,
+        "shoulder_angle": shoulder_angle,
+    }
+    return angles, result, notes
+
+
+def print_landmark_report(title, landmark_dict,
+                          image_width=None, image_height=None):
+    """
+    Convert Person 1's landmarks, measure the angles, analyze the form, print.
+
+    image_width and image_height (in pixels) are optional. Give BOTH to
+    convert the landmarks to pixel coordinates before measuring angles (use
+    this for real camera frames). Leave BOTH out to use the 0-1 values as they
+    are, like the simulated demo does.
+
+    The measuring and analysis are done by analyze_landmarks(); this function
+    only prints the result.
+
+    Returns a tuple (angles, result):
+        angles : dict with the keys "elbow_angle", "hip_angle" and
+                 "shoulder_angle". Each value is the angle in degrees that was
+                 sent to the form analyzer, or None if the visibility check
+                 rejected it.
+        result : the dictionary returned by analyze_push_up_form().
+    Callers that only want the printed report can simply ignore the return
+    value. Nothing is measured again to build it.
+    """
+    angles, result, notes = analyze_landmarks(
+        landmark_dict, image_width, image_height)
+
     print(title)
-    print(f"Elbow Angle: {angle_text(elbow_angle, elbow_note)}")
-    print(f"Hip Angle: {angle_text(hip_angle, hip_note)}")
-    print(f"Shoulder Angle: {angle_text(shoulder_angle, shoulder_note)}")
+    elbow_text = angle_text(angles["elbow_angle"], _note_for(notes, "Elbow"))
+    hip_text = angle_text(angles["hip_angle"], _note_for(notes, "Hip"))
+    shoulder_text = angle_text(angles["shoulder_angle"],
+                               _note_for(notes, "Shoulder"))
+    print(f"Elbow Angle: {elbow_text}")
+    print(f"Hip Angle: {hip_text}")
+    print(f"Shoulder Angle: {shoulder_text}")
     print(f"Visibility Check (threshold {VISIBILITY_THRESHOLD}):")
     if notes:
         for note in notes:
@@ -325,6 +450,8 @@ def print_landmark_report(title, landmark_dict):
     for message in result["feedback"]:
         print(f"    - {message}")
     print()
+
+    return angles, result
 
 
 def main():
